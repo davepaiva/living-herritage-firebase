@@ -2,7 +2,6 @@ const functions = require('firebase-functions');
 const cors = require('cors')({origin: true})   //Library for Cross Origin Resource Sharing in browser
 const admin = require('firebase-admin')
 var GeoFirestore = require("geofirestore").GeoFirestore;   //Firestore Wrapper for geoquerying
-const apollo = require('apollo-server')
 
 var serviceAccount = require('./serviceAccountKey.json');  //Firebase project init
 admin.initializeApp({
@@ -91,21 +90,21 @@ exports.postData = functions.https.onRequest((req, res)=>{
 
   exports.getData = functions.https.onRequest((req, res)=>{
 
-    cors(req, res, ()=>{
+    cors(req, res, ()=>{  
 
         if(req.method === 'POST'){
 
-            var radius = Number(req.body.radius)
-            var userLat = Number(req.body.userLat)
-            var userLong = Number(req.body.userLong)
-
+            var radius = Number(req.body.radius)   //gets user/pre defined radius of Refion Of Interest
+            var userLat = Number(req.body.userLat)  //get user's latitiude
+            var userLong = Number(req.body.userLong) //gets user's longtitiude
+            // Query the collection with set parameters:
             var query = geoCollection.near({ center: new admin.firestore.GeoPoint(userLat, userLong), radius: radius });
 
             query.get().then((snap)=>{ 
                 
                 const docs = snap.docs.map((doc)=>{
-                    doc['data'] = doc['data']();
-                    return doc;
+                    doc['data'] = doc['data']();  
+                    return doc;  //returns the list of documents fullfilling query criteria
                 })
                 return res.status(200).send({ docs });
             }).catch((err)=>{
